@@ -1,9 +1,13 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 
-SDL_Window* window;
-SDL_Renderer* renderer;
+uint32_t* color_buffer;
+SDL_Window* window = nullptr;
+SDL_Renderer* renderer = nullptr;
+SDL_Texture* color_buffer_texture = nullptr;
 bool is_running = false;
+int window_width = 800;
+int window_height = 600;
 
 bool initialize_window(){
     if(SDL_Init(SDL_INIT_EVERYTHING)!=0){
@@ -36,6 +40,8 @@ void setup();
 void process_input();
 void update();
 void render();
+void destroy_window();
+void render_color_buffer();
 
 int main(){
     is_running = initialize_window();
@@ -45,11 +51,19 @@ int main(){
         update();
         render();
     }
+    destroy_window();
     return 0;
 }
 
 void setup(){
-
+    color_buffer = (uint32_t*)malloc(sizeof(uint32_t)*window_width*window_height);
+    color_buffer_texture = SDL_CreateTexture(
+            renderer,
+            SDL_PIXELFORMAT_ARGB8888,
+            SDL_TEXTUREACCESS_STREAMING,
+            window_width,
+            window_height
+            );
 }
 
 void process_input(){
@@ -68,12 +82,44 @@ void process_input(){
     }
 }
 
+void clear_color_buffer(uint32_t color){
+    for(int y = 0;y<window_height;y++){
+        for(int x = 0;x<window_width;x++){
+            color_buffer[y*window_width+x] = color;
+        }
+    }
+}
+
 void update(){
 
+}
+
+void destroy_window(){
+    free(color_buffer);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+}
+
+void render_color_buffer(){
+    SDL_UpdateTexture(
+            color_buffer_texture,
+            nullptr,
+            color_buffer,
+            (int)sizeof(uint32_t)*window_width
+            );
+    SDL_RenderCopy(renderer,color_buffer_texture, nullptr, nullptr);
 }
 
 void render(){
     SDL_SetRenderDrawColor(renderer,255,0,0,255);
     SDL_RenderClear(renderer);
+    //...
+    render_color_buffer();
+    clear_color_buffer(0xFFFFFF00);
+
+
+
+    //...
     SDL_RenderPresent(renderer);
 }
