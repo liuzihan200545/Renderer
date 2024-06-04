@@ -19,11 +19,11 @@ bool initialize_window(){
             600,
             SDL_WINDOW_BORDERLESS
             );
-    //TODO:Create a renderer.
     if(!window){
         fprintf(stderr,"Error Create a Window!\n");
         return false;
     }
+    //TODO:Create a renderer.
     renderer = SDL_CreateRenderer(window,-1,0);
     if(!renderer){
         fprintf(stderr,"Error Create a Renderer!\n");
@@ -56,6 +56,7 @@ void process_input(){
     SDL_Event event;
     SDL_PollEvent(&event);
     switch (event.type) {
+        //TODO: examine the push of the exit button || examine the push of the "Esc" key
         case SDL_QUIT:
             is_running = false;
             break;
