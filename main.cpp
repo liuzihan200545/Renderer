@@ -9,18 +9,30 @@ bool is_running = false;
 int window_width = 800;
 int window_height = 600;
 
+void setup();
+void process_input();
+void update();
+void render();
+void destroy_window();
+void render_color_buffer();
+
 bool initialize_window(){
     if(SDL_Init(SDL_INIT_EVERYTHING)!=0){
         fprintf(stderr,"Error Initialize SDL!\n");
         return false;
     }
+    //Use the SDL to query what is the full screen max.
+    SDL_DisplayMode display_mode;
+    SDL_GetCurrentDisplayMode(0,&display_mode);
+    window_width = display_mode.w;
+    window_height = display_mode.h;
     //TODO:Create a window.
     window = SDL_CreateWindow(
             NULL,
             SDL_WINDOWPOS_CENTERED,
             SDL_WINDOWPOS_CENTERED,
-            800,
-            600,
+            window_width,
+            window_height,
             SDL_WINDOW_BORDERLESS
             );
     if(!window){
@@ -33,15 +45,9 @@ bool initialize_window(){
         fprintf(stderr,"Error Create a Renderer!\n");
         return false;
     }
+    SDL_SetWindowFullscreen(window,SDL_WINDOW_FULLSCREEN);
     return true;
 }
-
-void setup();
-void process_input();
-void update();
-void render();
-void destroy_window();
-void render_color_buffer();
 
 int main(){
     is_running = initialize_window();
