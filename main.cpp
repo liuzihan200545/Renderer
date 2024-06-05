@@ -1,53 +1,20 @@
 #include <iostream>
 #include <SDL2/SDL.h>
+#include "display.h"
+#include "vector.h"
 
-uint32_t* color_buffer;
-SDL_Window* window = nullptr;
-SDL_Renderer* renderer = nullptr;
-SDL_Texture* color_buffer_texture = nullptr;
+const int N_Points = 9 * 9 * 9;
 bool is_running = false;
-int window_width = 800;
-int window_height = 600;
+int fov_factor = 128;
+vec_3t cube_points[N_Points];
+vec_2t projected_cube_points[N_Points];
+
 
 void setup();
 void process_input();
 void update();
 void render();
-void destroy_window();
-void render_color_buffer();
-
-bool initialize_window(){
-    if(SDL_Init(SDL_INIT_EVERYTHING)!=0){
-        fprintf(stderr,"Error Initialize SDL!\n");
-        return false;
-    }
-    //Use the SDL to query what is the full screen max.
-    SDL_DisplayMode display_mode;
-    SDL_GetCurrentDisplayMode(0,&display_mode);
-    window_width = display_mode.w;
-    window_height = display_mode.h;
-    //TODO:Create a window.
-    window = SDL_CreateWindow(
-            NULL,
-            SDL_WINDOWPOS_CENTERED,
-            SDL_WINDOWPOS_CENTERED,
-            window_width,
-            window_height,
-            SDL_WINDOW_BORDERLESS
-            );
-    if(!window){
-        fprintf(stderr,"Error Create a Window!\n");
-        return false;
-    }
-    //TODO:Create a renderer.
-    renderer = SDL_CreateRenderer(window,-1,0);
-    if(!renderer){
-        fprintf(stderr,"Error Create a Renderer!\n");
-        return false;
-    }
-    SDL_SetWindowFullscreen(window,SDL_WINDOW_FULLSCREEN);
-    return true;
-}
+vec_2t projection(vec_3t point);
 
 int main(){
     is_running = initialize_window();
@@ -70,6 +37,16 @@ void setup(){
             window_width,
             window_height
             );
+
+    int point_count = 0;
+
+    for(float x = -1;x<=1;x+=0.25){
+        for(float y = -1;y<=1;y+=0.25){
+            for(float z = -1;z<=1;z+=0.25){
+                cube_points[point_count++] = {x,y,z};
+            }
+        }
+    }
 }
 
 void process_input(){
@@ -88,43 +65,43 @@ void process_input(){
     }
 }
 
-void clear_color_buffer(uint32_t color){
-    for(int y = 0;y<window_height;y++){
-        for(int x = 0;x<window_width;x++){
-            color_buffer[y*window_width+x] = color;
-        }
-    }
+vec_2t projection(vec_3t point){
+    vec_2t new_vec = {
+            fov_factor * point.x,
+            fov_factor*point.y
+    };
+    return new_vec;
 }
 
 void update(){
+    for(int i = 0;i<N_Points;i++){
+        projected_cube_points[i] = projection(cube_points[i]);
+    }
 
-}
-
-void destroy_window(){
-    free(color_buffer);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-}
-
-void render_color_buffer(){
-    SDL_UpdateTexture(
-            color_buffer_texture,
-            nullptr,
-            color_buffer,
-            (int)sizeof(uint32_t)*window_width
-            );
-    SDL_RenderCopy(renderer,color_buffer_texture, nullptr, nullptr);
 }
 
 void render(){
-    SDL_SetRenderDrawColor(renderer,255,0,0,255);
-    SDL_RenderClear(renderer);
+    //SDL_SetRenderDrawColor(renderer,255,0,0,255);
+    //SDL_RenderClear(renderer);
     //...
+
+    //draw_gird();
+    for(int i = 0;i<N_Points;i++){
+        vec_2t projected_point = projected_cube_points[i];
+        int target_x = projected_point.x + window_width/2;
+        int target_y = projected_point.y + window_height/2;
+        draw_rectangle(target_x,
+                       target_y,
+                       4,
+                       4,
+                       0xFF00FF00);
+    }
+
     render_color_buffer();
-    clear_color_buffer(0xFFFFFF00);
 
+    clear_color_buffer(0x00000000);
 
+    vec_3t vector3d = {1.0,2.0,3.0};
 
     //...
     SDL_RenderPresent(renderer);
