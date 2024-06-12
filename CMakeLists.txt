@@ -5,10 +5,15 @@ project(renderer)
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
 
-add_executable(renderer main.cpp
-        display.cpp
-        display.h
-        vector.h
-        vector.cpp)
+add_executable(renderer src/main.cpp
+        src/display.cpp
+        src/display.h
+        src/vector.h
+        src/vector.cpp
+        src/mesh.h
+        src/mesh.cpp
+        src/triangle.cpp
+        src/triangle.h
+)
 
 target_link_libraries(renderer ${SDL2_LIBRARIES})
