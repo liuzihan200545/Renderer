@@ -118,9 +118,12 @@ void render(){
     //...
     for(int i = 0;i<N_MESH_FACES;i++){
         triangle_t triangle = triangle_to_render[i];
-        draw_rectangle(triangle.points[0].x,triangle.points[0].y,3,3,0xFFFFFF00);
-        draw_rectangle(triangle.points[1].x,triangle.points[1].y,3,3,0xFFFFFF00);
-        draw_rectangle(triangle.points[2].x,triangle.points[2].y,3,3,0xFFFFFF00);
+        draw_rectangle(triangle.points[0].x,triangle.points[0].y,3,3,white);
+        draw_rectangle(triangle.points[1].x,triangle.points[1].y,3,3,white);
+        draw_rectangle(triangle.points[2].x,triangle.points[2].y,3,3,white);
+        draw_line(triangle.points[0].x,triangle.points[0].y,triangle.points[1].x,triangle.points[1].y,white);
+        draw_line(triangle.points[1].x,triangle.points[1].y,triangle.points[2].x,triangle.points[2].y,white);
+        draw_line(triangle.points[2].x,triangle.points[2].y,triangle.points[0].x,triangle.points[0].y,white);
     }
 
     render_color_buffer();

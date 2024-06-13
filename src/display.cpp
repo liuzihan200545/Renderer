@@ -1,6 +1,5 @@
 #include "display.h"
 #include <SDL2/SDL.h>
-#include <iostream>
 
 uint32_t* color_buffer = nullptr;
 SDL_Window* window = nullptr;
@@ -8,6 +7,7 @@ SDL_Renderer* renderer = nullptr;
 SDL_Texture* color_buffer_texture = nullptr;
 int window_width = 800;
 int window_height = 600;
+
 
 // Initialize the Main Window of the program,and also create the renderer of the window.
 bool initialize_window(){
@@ -94,5 +94,22 @@ void destroy_window(){
 void draw_pixel(int x, int y, uint32_t color) {
     if(x>=0 && x<window_width && y>=0 && y<window_height){
         color_buffer[y*window_width+x] = color;
+    }
+}
+
+void draw_line(float x0, float y0,float x1, float y1, uint32_t color) {
+    float delta_x = (x1 - x0);
+    float delta_y = (y1 - y0);
+    float side_length = abs(delta_x) >= abs(delta_y) ? abs(delta_x) : abs(delta_y);
+    float x_inc = delta_x / side_length;
+    float y_inc = delta_y / side_length;
+
+    float current_x = x0;
+    float current_y = y0;
+
+    for(int i = 0;i<=side_length;i++){
+        draw_pixel(round(current_x), round(current_y),color);
+        current_x += x_inc;
+        current_y += y_inc;
     }
 }
