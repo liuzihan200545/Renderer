@@ -1,5 +1,7 @@
 #include "display.h"
 #include <SDL2/SDL.h>
+#include "vector.h"
+#include "triangle.h"
 
 uint32_t* color_buffer = nullptr;
 SDL_Window* window = nullptr;
@@ -43,7 +45,7 @@ bool initialize_window(){
 }
 
 // Draw a gird on the window.
-void draw_gird(){
+void draw_grid() {
     for(int y = 0;y<window_height;y++){
         for(int x = 0;x<window_width;x++){
             if(x%40==0||y%40==0){
@@ -95,6 +97,31 @@ void draw_pixel(int x, int y, uint32_t color) {
     if(x>=0 && x<window_width && y>=0 && y<window_height){
         color_buffer[y*window_width+x] = color;
     }
+}
+
+// DDA Line Drawing Algorithm
+void draw_line(vec_2t p0,vec_2t p1, uint32_t color) {
+    float delta_x = (p1.x - p0.x);
+    float delta_y = (p1.y - p0.y);
+    float side_length = abs(delta_x) >= abs(delta_y) ? abs(delta_x) : abs(delta_y);
+    float x_inc = delta_x / side_length;
+    float y_inc = delta_y / side_length;
+
+    float current_x = p0.x;
+    float current_y = p0.y;
+
+    for(int i = 0;i<=side_length;i++){
+        draw_pixel(round(current_x), round(current_y),color);
+        current_x += x_inc;
+        current_y += y_inc;
+    }
+}
+
+// Draw the outline of the triangle use the selected color.
+void draw_triangle(triangle_t triangle, uint32_t color) {
+    draw_line(triangle.points[0],triangle.points[1],color);
+    draw_line(triangle.points[1],triangle.points[2],color);
+    draw_line(triangle.points[2],triangle.points[0],color);
 }
 
 void draw_line(float x0, float y0,float x1, float y1, uint32_t color) {

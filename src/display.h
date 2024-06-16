@@ -2,8 +2,10 @@
 #pragma once
 #include <iostream>
 #include <SDL2/SDL.h>
+#include "vector.h"
+#include "triangle.h"
 
-#define FPS 60
+#define FPS 120
 #define FRAME_TARGET_TIME (1000 / FPS)
 
 extern uint32_t* color_buffer;
@@ -24,12 +26,14 @@ bool initialize_window();
 
 void draw_grid();
 void draw_rectangle(int pos_x,int pos_y,int width,int height,uint32_t color);
-void draw_line(float x0,float y0,float x1,float y1,uint32_t color);
+void draw_line(vec_2t p0,vec_2t p1,uint32_t color);
+void draw_triangle(triangle_t triangle,uint32_t color);
+void draw_triangle_plane(triangle_t triangle,uint32_t color);
 void render_color_buffer();
 void clear_color_buffer(uint32_t color);
 void destroy_window();
 void draw_pixel(int x,int y,uint32_t color);
-
+void draw_line(float x0, float y0,float x1, float y1, uint32_t color);
 
 
 

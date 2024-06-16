@@ -14,6 +14,8 @@ add_executable(renderer src/main.cpp
         src/mesh.cpp
         src/triangle.cpp
         src/triangle.h
+        src/array.h
+        src/array.cpp
 )
 
 target_link_libraries(renderer ${SDL2_LIBRARIES})
