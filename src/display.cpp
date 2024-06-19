@@ -3,6 +3,13 @@
 #include "vector.h"
 #include "triangle.h"
 
+#define x0 triangle.points[0].x
+#define y0 triangle.points[0].y
+#define x1 triangle.points[1].x
+#define y1 triangle.points[1].y
+#define x2 triangle.points[2].x
+#define y2 triangle.points[2].y
+
 uint32_t* color_buffer = nullptr;
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
@@ -124,19 +131,79 @@ void draw_triangle(triangle_t triangle, uint32_t color) {
     draw_line(triangle.points[2],triangle.points[0],color);
 }
 
-void draw_line(float x0, float y0,float x1, float y1, uint32_t color) {
-    float delta_x = (x1 - x0);
-    float delta_y = (y1 - y0);
+
+void draw_line(float x_0, float y_0,float x_1, float y_1, uint32_t color) {
+    float delta_x = (x_1 - x_0);
+    float delta_y = (y_1 - y_0);
     float side_length = abs(delta_x) >= abs(delta_y) ? abs(delta_x) : abs(delta_y);
     float x_inc = delta_x / side_length;
     float y_inc = delta_y / side_length;
 
-    float current_x = x0;
-    float current_y = y0;
+    float current_x = x_0;
+    float current_y = y_0;
 
     for(int i = 0;i<=side_length;i++){
         draw_pixel(round(current_x), round(current_y),color);
         current_x += x_inc;
         current_y += y_inc;
+    }
+}
+
+
+void swap(vec_2t &p1, vec_2t &p2) {
+    vec_2t temp = p2;
+    p2 = p1;
+    p1 = temp;
+}
+
+void draw_plat_top(int x_0,int y_0,int x_1,int y_1,int x_2,int y_2,uint32_t color){
+    float inv_slope_1 = (float) (x_2 - x_0) / (y_2-y_0);
+    float inv_slope_2 = (float) (x_2 - x_1) / (y_2-y_1);
+    float x_start = x_2;
+    float x_end = x_2;
+
+    for(int y = y_2;y>=y_0;y--){
+        draw_line(x_start, y, x_end, y, color);
+        x_start -= inv_slope_1;
+        x_end -= inv_slope_2;
+    }
+}
+
+void draw_plat_bottom(int x_0,int y_0,int x_1,int y_1,int x_2,int y_2,uint32_t color){
+    float inv_slope_1 = (float) (x_1 - x_0) / (y_1-y_0);
+    float inv_slope_2 = (float) (x_2 - x_0) / (y_2-y_0);
+    float x_start = x_0;
+    float x_end = x_0;
+
+    for(int y = y_0;y<=y_2;y++){
+        draw_line(x_start, y, x_end, y, color);
+        x_start += inv_slope_1;
+        x_end += inv_slope_2;
+    }
+}
+
+void draw_filled_triangle(triangle_t triangle, uint32_t color) {
+    if(triangle.points[0].y>triangle.points[1].y){
+        swap(triangle.points[0],triangle.points[1]);
+    }
+    if(triangle.points[0].y>triangle.points[2].y){
+        swap(triangle.points[0],triangle.points[2]);
+    }
+    if(triangle.points[1].y>triangle.points[2].y){
+        swap(triangle.points[1],triangle.points[2]);
+    }
+
+    float My = y1;
+    float Mx = (x2-x0)*(y1-y0)/(y2-y0) + x0;
+
+    if(y0 == y1){
+        draw_plat_top(x1,y1,Mx,My,x2,y2,color);
+    }
+    else if(y1 == y2){
+        draw_plat_bottom(x0,y0,x1,y1,Mx,My,color);
+    }
+    else{
+        draw_plat_bottom(x0,y0,x1,y1,Mx,My,color);
+        draw_plat_top(x1,y1,Mx,My,x2,y2,color);
     }
 }

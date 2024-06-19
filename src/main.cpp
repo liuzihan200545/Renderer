@@ -31,6 +31,9 @@ int main(){
 }
 
 void setup(){
+    //Initialize render mode and and triangle culling mode
+    render_method = RENDER_WIRE;
+    cull_method = CULL_BACKFACE;
     color_buffer = (uint32_t*)malloc(sizeof(uint32_t)*window_width*window_height);
     color_buffer_texture = SDL_CreateTexture(
             renderer,
@@ -39,10 +42,11 @@ void setup(){
             window_width,
             window_height
             );
-    Load_mesh_from_obj_file("../asserts/cube.obj");
-    for(auto u:mesh.faces){
-        std::cout<<mesh.vertices[u.a-1].y<<" "<<mesh.vertices[u.b-1].y<<" "<<mesh.vertices[u.c-1].y<<std::endl;
-    }
+    Load_mesh_from_obj_file("../asserts/f22.obj");
+
+    vec_3t v1 {1,1,1};
+    vec_3t v2 {1,1,1};
+    //std::cout<<vec3_mul(v1,v2)<<std::endl;
 }
 
 void process_input(){
@@ -57,10 +61,28 @@ void process_input(){
             if(event.key.keysym.sym == SDLK_ESCAPE){
                 is_running = false;
             }
-            else if(event.key.keysym.sym == SDLK_w){
+            if(event.key.keysym.sym == SDLK_1){
+                render_method = RENDER_WIRE_VERTEX;
+            }
+            if(event.key.keysym.sym == SDLK_2){
+                render_method = RENDER_WIRE;
+            }
+            if(event.key.keysym.sym == SDLK_3){
+                render_method = RENDER_FILL_TRIANGLE;
+            }
+            if(event.key.keysym.sym == SDLK_4){
+                render_method = RENDER_FILL_TRIANGLE_WIRE;
+            }
+            if(event.key.keysym.sym == SDLK_c){
+                cull_method = CULL_BACKFACE;
+            }
+            if(event.key.keysym.sym == SDLK_d){
+                cull_method = CULL_NONE;
+            }
+            if(event.key.keysym.sym == SDLK_w){
                 camera_position.z += 0.5;
             }
-            else if(event.key.keysym.sym == SDLK_s){
+            if(event.key.keysym.sym == SDLK_s){
                 camera_position.z -= 0.5;
             }
             break;
@@ -95,17 +117,42 @@ void update(){
         face_vertices[2] = mesh.vertices[u.c - 1];
 
         triangle_t projected_triangle;
-
+        vec_3t transformed_vertices[3];
         // loop all these vertices of the current face and apply transformations
-        for(int j = 0;j<3;j++){
+        for(int j = 0;j<3;j++) {
             vec_3t transformed_vertex = face_vertices[j];
-            transformed_vertex = rotate_x(transformed_vertex,mesh.rotation.x);
-            transformed_vertex = rotate_y(transformed_vertex,mesh.rotation.y);
-            transformed_vertex = rotate_z(transformed_vertex,mesh.rotation.z);
+            transformed_vertex = rotate_x(transformed_vertex, mesh.rotation.x);
+            transformed_vertex = rotate_y(transformed_vertex, mesh.rotation.y);
+            transformed_vertex = rotate_z(transformed_vertex, mesh.rotation.z);
 
             transformed_vertex.z -= camera_position.z;
+            transformed_vertices[j] = transformed_vertex;
+        }
+        if(cull_method == CULL_BACKFACE){
+            vec_3t vector_a = transformed_vertices[0];
+            vec_3t vector_b = transformed_vertices[1];
+            vec_3t vector_c = transformed_vertices[2];
 
-            vec_2t projected_point = projection(transformed_vertex);
+            vec_3t vector_ab = vec3_sub(vector_b,vector_a);
+            vec_3t vector_ac = vec3_sub(vector_c,vector_a);
+
+            normalize_vec3(&vector_ab);
+            normalize_vec3(&vector_ac);
+
+            vec_3t normal = vec3_cross(vector_ab,vector_ac);
+            normalize_vec3(&normal);
+
+            vec_3t camera_ray = vec3_sub(camera_position,vector_a);
+
+            float dot_normal_camera = vec3_dot(normal,camera_ray);
+
+            if(dot_normal_camera<0){
+                continue;
+            }
+        }
+        for(int j = 0;j<3;j++){
+
+            vec_2t projected_point = projection(transformed_vertices[j]);
             projected_point.x += (window_width/2);
             projected_point.y += (window_height/2);
             projected_triangle.points[j] = projected_point;
@@ -120,8 +167,23 @@ void render(){
     //SDL_RenderClear(renderer);
     //...
     for(auto triangle:triangle_to_render){
-        draw_triangle(triangle,white);
+        if(render_method == RENDER_FILL_TRIANGLE || render_method == RENDER_FILL_TRIANGLE_WIRE){
+            draw_filled_triangle(triangle,grey);
+        }
+
+        if(render_method == RENDER_WIRE || render_method == RENDER_WIRE_VERTEX || render_method == RENDER_FILL_TRIANGLE_WIRE){
+            draw_triangle(triangle,yellow);
+        }
+
+        if(render_method == RENDER_WIRE_VERTEX){
+            for(int j = 0;j<3;j++){
+                draw_rectangle(triangle.points[j].x-3,triangle.points[j].y-3,6,6,red);
+            }
+        }
+
+
     }
+
 
     render_color_buffer();
     clear_color_buffer(0x00000000);
