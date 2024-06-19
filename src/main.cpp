@@ -18,6 +18,7 @@ void update();
 void render();
 vec_2t projection(vec_3t point);
 
+
 int main(){
     is_running = initialize_window();
     setup();
