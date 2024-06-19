@@ -97,6 +97,7 @@ vec_2t projection(vec_3t point){
     return new_vec;
 }
 
+
 void update(){
     int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks() - previous_frame_time);
     if(time_to_wait >= 0 && time_to_wait < FRAME_TARGET_TIME){
